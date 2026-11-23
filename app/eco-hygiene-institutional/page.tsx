@@ -54,18 +54,66 @@ const SECTORS: {
   title: string;
   text: string;
 }[] = [
-  { icon: Hotel, title: "Hotels", text: "Guest rooms, lobbies, and hospitality facilities." },
-  { icon: UtensilsCrossed, title: "Restaurants", text: "Dining spaces, kitchens, and food service areas." },
-  { icon: Hospital, title: "Healthcare", text: "Clinics, hospitals, and patient care facilities." },
-  { icon: GraduationCap, title: "Education", text: "Schools, campuses, and learning institutions." },
-  { icon: Building2, title: "Corporate Offices", text: "Workplaces, pantries, and shared facilities." },
-  { icon: ShoppingBag, title: "Retail & Malls", text: "Commercial spaces and public washrooms." },
-  { icon: Factory, title: "Manufacturing", text: "Factories, warehouses, and production facilities." },
-  { icon: Plane, title: "Transportation", text: "Airports, terminals, and transport hubs." },
-  { icon: Home, title: "Residential", text: "Condominiums and property developments." },
-  { icon: Dumbbell, title: "Fitness Centers", text: "Gyms, locker rooms, and wellness facilities." },
-  { icon: Scissors, title: "Salons & Spas", text: "Personal care, treatment, and relaxation spaces." },
-  { icon: PartyPopper, title: "Events & Venues", text: "Function halls, catering, and event facilities." },
+  {
+    icon: Hotel,
+    title: "Hotels",
+    text: "Guest rooms, lobbies, and hospitality facilities.",
+  },
+  {
+    icon: UtensilsCrossed,
+    title: "Restaurants",
+    text: "Dining spaces, kitchens, and food service areas.",
+  },
+  {
+    icon: Hospital,
+    title: "Healthcare",
+    text: "Clinics, hospitals, and patient care facilities.",
+  },
+  {
+    icon: GraduationCap,
+    title: "Education",
+    text: "Schools, campuses, and learning institutions.",
+  },
+  {
+    icon: Building2,
+    title: "Corporate Offices",
+    text: "Workplaces, pantries, and shared facilities.",
+  },
+  {
+    icon: ShoppingBag,
+    title: "Retail & Malls",
+    text: "Commercial spaces and public washrooms.",
+  },
+  {
+    icon: Factory,
+    title: "Manufacturing",
+    text: "Factories, warehouses, and production facilities.",
+  },
+  {
+    icon: Plane,
+    title: "Transportation",
+    text: "Airports, terminals, and transport hubs.",
+  },
+  {
+    icon: Home,
+    title: "Residential",
+    text: "Condominiums and property developments.",
+  },
+  {
+    icon: Dumbbell,
+    title: "Fitness Centers",
+    text: "Gyms, locker rooms, and wellness facilities.",
+  },
+  {
+    icon: Scissors,
+    title: "Salons & Spas",
+    text: "Personal care, treatment, and relaxation spaces.",
+  },
+  {
+    icon: PartyPopper,
+    title: "Events & Venues",
+    text: "Function halls, catering, and event facilities.",
+  },
 ];
 
 // ------------------------------------------------------------
@@ -81,7 +129,10 @@ const CUSTOMERS: { name: string; src: string }[] = [
   { name: "Concentrix", src: "/customers/concentrix.png" },
   { name: "DoubleDragon Properties Corp", src: "/customers/doubledragon.png" },
   { name: "Globe", src: "/customers/globe.png" },
-  { name: "Manila International Airport Authority", src: "/customers/miaa.png" },
+  {
+    name: "Manila International Airport Authority",
+    src: "/customers/miaa.png",
+  },
   { name: "Megaworld", src: "/customers/megaworld.png" },
   { name: "PAGCOR", src: "/customers/pagcor.png" },
   { name: "Resorts World Manila", src: "/customers/resorts-world.png" },
@@ -150,7 +201,10 @@ interface ProductFamily {
 const FALLBACK_INSTITUTIONAL_PRODUCTS: InstitutionalProduct[] = [
   ["Jumbo Roll Tissue Dispenser", "jumbo-roll-tissue-dispenser"],
   ["Jumbo Coreless Tissue Roll", "jumbo-coreless-tissue-roll"],
-  ["Centerpull Square Plastic Dispenser", "centerpull-square-plastic-dispenser"],
+  [
+    "Centerpull Square Plastic Dispenser",
+    "centerpull-square-plastic-dispenser",
+  ],
   ["Jumbo Tissue Roll", "jumbo-tissue-roll"],
   ["Center Pull Stainless Dispenser", "center-pull-stainless-dispenser"],
   ["Interfolded Paper Towel Dispenser", "interfolded-paper-towel-dispenser"],
@@ -207,9 +261,7 @@ function mergeFallbackInstitutionalImages(
   return products.map((product) => ({
     ...product,
     image:
-      product.image?.trim() ||
-      getFallbackProductImage(product.name) ||
-      null,
+      product.image?.trim() || getFallbackProductImage(product.name) || null,
   }));
 }
 
@@ -311,7 +363,9 @@ function useInstitutionalProducts(): InstitutionalProduct[] {
 
     async function load() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/institutional-products`);
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/institutional-products`,
+        );
         if (!res.ok) return;
 
         const body: {
@@ -835,7 +889,7 @@ function Customers() {
               name={customer.name}
               src={customer.src}
             />
-          ))} 
+          ))}
         </div>
       </div>
     </section>
