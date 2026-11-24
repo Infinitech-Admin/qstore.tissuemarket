@@ -152,7 +152,7 @@ const CUSTOMERS: { name: string; src: string }[] = [
 // ------------------------------------------------------------
 const CONTACT_PAGE_URL = "/contact";
 const INSTITUTIONAL_HERO_IMAGE = "/products/eco-hygiene-dispenser.jpg";
-const INSTITUTIONAL_FALLBACK_BANNER = "/banner/banner1.png";
+const INSTITUTIONAL_FALLBACK_BANNER = "/banner2.png";
 
 const INSTITUTIONAL_CONTACTS = {
   landline: {
