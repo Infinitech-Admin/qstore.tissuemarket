@@ -43,12 +43,6 @@ function getImageUrl(path: string | null | undefined): string | null {
 // CONTENT CONFIGURATION
 // ============================================================
 
-type ManagedBanner = {
-  id: number;
-  image_url: string;
-  sort_order: number;
-};
-
 const SECTORS: {
   icon: LucideIcon;
   title: string;
@@ -152,7 +146,9 @@ const CUSTOMERS: { name: string; src: string }[] = [
 // ------------------------------------------------------------
 const CONTACT_PAGE_URL = "/contact";
 const INSTITUTIONAL_HERO_IMAGE = "/products/eco-hygiene-dispenser.jpg";
-const INSTITUTIONAL_FALLBACK_BANNER = "/banner2.png";
+
+// The hero banner is always this file (public/banner2.png). Nothing else.
+const INSTITUTIONAL_BANNER = "/banner2.png";
 
 const INSTITUTIONAL_CONTACTS = {
   landline: {
@@ -404,42 +400,10 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 }
 
 // ============================================================
-// HERO BANNER
+// HERO BANNER (banner2.png only)
 // ============================================================
 
 function Hero() {
-  const [bannerSrc, setBannerSrc] = React.useState(
-    INSTITUTIONAL_FALLBACK_BANNER,
-  );
-
-  React.useEffect(() => {
-    let cancelled = false;
-
-    fetch("/api/banners", { cache: "no-store" })
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to load hero banner");
-        return res.json() as Promise<ManagedBanner[]>;
-      })
-      .then((banners) => {
-        if (cancelled || banners.length === 0) return;
-
-        const banner = [...banners]
-          .filter((item) => item.image_url)
-          .sort((a, b) => a.sort_order - b.sort_order)[0];
-
-        if (banner) setBannerSrc(banner.image_url);
-      })
-      .catch((error: unknown) => {
-        if (!cancelled) {
-          console.error("Unable to load the institutional hero banner.", error);
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
   return (
     <section className="w-full overflow-hidden bg-[#F1F8EE]">
       <div className="w-full">
@@ -450,11 +414,10 @@ function Hero() {
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={bannerSrc}
+            src={INSTITUTIONAL_BANNER}
             alt="Q-STORE - Everyday essentials. Quality you can trust. Your one-stop-store for hygiene, cleaning and institutional supplies."
             className="block h-auto w-full object-contain"
             fetchPriority="high"
-            onError={() => setBannerSrc(INSTITUTIONAL_FALLBACK_BANNER)}
           />
         </a>
       </div>
@@ -524,10 +487,6 @@ function InstitutionalProductsShowcase({
     description: string;
   } | null>(null);
 
-  const allFamilies = React.useMemo(
-    () => groupInstitutionalProducts(products),
-    [products],
-  );
   const families = React.useMemo(
     () => groupInstitutionalProducts(products, query),
     [products, query],
@@ -847,9 +806,9 @@ function CustomerLogo({ name, src }: { name: string; src: string }) {
   const [failed, setFailed] = React.useState(false);
 
   return (
-    <div className="flex h-20 items-center justify-center rounded-xl bg-[#E4F0E0] p-3">
+    <div className="flex h-14 items-center justify-center rounded-xl bg-[#E4F0E0] p-2 sm:h-20 sm:p-3 md:h-24">
       {failed ? (
-        <span className="text-center text-xs font-semibold leading-4 text-[#103B2A]">
+        <span className="text-center text-[9px] font-semibold leading-3 text-[#103B2A] sm:text-xs sm:leading-4">
           {name}
         </span>
       ) : (
@@ -859,7 +818,7 @@ function CustomerLogo({ name, src }: { name: string; src: string }) {
           alt={name}
           loading="lazy"
           onError={() => setFailed(true)}
-          className="max-h-12 w-auto max-w-full object-contain"
+          className="max-h-8 w-auto max-w-full object-contain sm:max-h-12 md:max-h-14"
         />
       )}
     </div>
@@ -882,7 +841,7 @@ function Customers() {
           <div className="mx-auto mt-4 h-px w-14 bg-[#C9D8CE]" />
         </div>
 
-        <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+        <div className="mx-auto mt-10 grid max-w-5xl grid-cols-4 gap-2 sm:gap-4">
           {CUSTOMERS.map((customer) => (
             <CustomerLogo
               key={customer.name}
