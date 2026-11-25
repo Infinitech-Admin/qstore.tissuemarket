@@ -818,7 +818,7 @@ function CustomerLogo({ name, src }: { name: string; src: string }) {
           alt={name}
           loading="lazy"
           onError={() => setFailed(true)}
-          className="max-h-8 w-auto max-w-full object-contain sm:max-h-12 md:max-h-14"
+          className="max-h-8 w-auto max-w-full object-contain mix-blend-multiply sm:max-h-12 md:max-h-14"
         />
       )}
     </div>
