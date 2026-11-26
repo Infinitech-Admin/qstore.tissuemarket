@@ -16,6 +16,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogOverlay,
 } from "@/components/ui/dialog";
 import { cn, formatPHP } from "@/lib/utils";
 
@@ -204,10 +205,13 @@ export function PromoPopup() {
         The [&>button] classes restyle the built-in close (X) button so it
         sits on the green panel in the top-right like the reference.
       */}
+      <DialogOverlay className="fixed inset-0 z-50 bg-black/75 backdrop-blur-[3px]" />
+
       <DialogContent
         className={cn(
           "w-[calc(100%-2rem)] max-w-[1040px] gap-0 overflow-hidden rounded-3xl border-0 p-0",
           "max-h-[92vh] md:max-h-none",
+          "bg-background",
           "[&>button]:right-4 [&>button]:top-4 [&>button]:z-30 [&>button]:rounded-full",
           "[&>button]:bg-black/20 [&>button]:p-1.5 [&>button]:text-white",
           "[&>button]:opacity-100 [&>button:hover]:bg-black/35",
