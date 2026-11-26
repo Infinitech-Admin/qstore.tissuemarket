@@ -23,7 +23,7 @@ import { cn, formatPHP } from "@/lib/utils";
 const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_IMAGE_URL ?? "";
 
 // How many promos to show (the popup shows up to this many, newest first).
-const MAX_PROMOS = 5;
+const MAX_PROMOS = 20;
 // Delay before the popup appears after page load.
 const OPEN_DELAY_MS = 800;
 // Shown once per browser session so it doesn't nag on every navigation.
@@ -116,11 +116,11 @@ export function PromoPopup() {
   }, [open, total]);
 
   useEffect(() => {
-    // Skip if already seen this session.
+    // Skip entirely if the popup was already seen this session.
     try {
       if (sessionStorage.getItem(SESSION_KEY)) return;
     } catch {
-      // storage unavailable — just show it
+      // sessionStorage unavailable (private mode, etc.) — just show it.
     }
 
     let cancelled = false;
@@ -179,10 +179,14 @@ export function PromoPopup() {
     }
   }
 
-  function handleShopNow() {
+  // Close the popup, switch the strip to its "Limited time" tab, and scroll
+  // to it. When a productId is given, the strip also centers and highlights
+  // that product's card.
+  function goToPromos(productId?: string) {
     handleOpenChange(false);
-    // Make sure the strip is on its "Limited time" tab, then scroll to it.
-    window.dispatchEvent(new Event("show-promos-tab"));
+    window.dispatchEvent(
+      new CustomEvent("show-promos-tab", { detail: { productId } }),
+    );
     // Wait for the dialog to finish closing so the page can scroll again.
     setTimeout(() => {
       document
@@ -190,6 +194,8 @@ export function PromoPopup() {
         ?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 250);
   }
+
+  const handleShopNow = () => goToPromos();
 
   if (isLoading || promos.length === 0) return null;
 
@@ -296,10 +302,21 @@ export function PromoPopup() {
             )}
           </div>
 
-          {/* Right: big rounded green panel with the product */}
+          {/* Right: big rounded green panel with the product.
+              Clicking it jumps to that product's card in the promo strip. */}
           <div className="relative z-10 p-3 md:p-3.5 md:pl-0">
             <div
-              className="flex h-full flex-col items-center gap-5 overflow-hidden rounded-2xl bg-gradient-to-br from-[#7fcf55] via-[#33b35a] to-[#00A552] p-5 shadow-lg md:flex-row md:gap-7 md:px-5 md:py-4"
+              role="button"
+              tabIndex={0}
+              onClick={() => goToPromos(product.id)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  goToPromos(product.id);
+                }
+              }}
+              aria-label={`View ${product.name} in the promos`}
+              className="flex h-full cursor-pointer flex-col items-center gap-5 overflow-hidden rounded-2xl bg-gradient-to-br from-[#7fcf55] via-[#33b35a] to-[#00A552] p-5 shadow-lg transition-[filter] hover:brightness-105 md:flex-row md:gap-7 md:px-5 md:py-4"
               aria-live="polite"
             >
               <div className="relative aspect-square w-full max-w-[300px] shrink-0 overflow-hidden rounded-3xl bg-white shadow-xl md:h-full md:max-w-none md:w-auto">

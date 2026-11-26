@@ -219,7 +219,14 @@ function isUpcoming(product: PromoProduct): boolean {
   return start > startOfToday();
 }
 
-function PromoCard({ product }: { product: PromoProduct }) {
+function PromoCard({
+  product,
+  highlighted = false,
+}: {
+  product: PromoProduct;
+  // True briefly after the promo popup sends the customer to this card.
+  highlighted?: boolean;
+}) {
   const upcoming = isUpcoming(product);
   const soldOut = !product.inStock || product.stock <= 0;
   const [isSm, setIsSm] = React.useState(false);
@@ -245,7 +252,11 @@ function PromoCard({ product }: { product: PromoProduct }) {
   return (
     <Link
       href={buildPromoHref(product)}
-      className="group flex flex-shrink-0 flex-col overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-moss-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:ring-green-300"
+      className={`group flex flex-shrink-0 flex-col overflow-hidden rounded-3xl bg-white shadow-sm ring-1 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:ring-green-300 ${
+        highlighted
+          ? "-translate-y-1 shadow-xl ring-4 ring-yellow-300"
+          : "ring-moss-100"
+      }`}
       style={{ width, maxWidth: width, minWidth: width }}
     >
       <div className="relative m-2.5 aspect-square overflow-hidden rounded-2xl bg-moss-50">
@@ -369,12 +380,22 @@ export function FeaturedProducts() {
   const [bestSellersStatus, setBestSellersStatus] =
     React.useState<FetchStatus>("loading");
 
+  // Promo the popup asked us to jump to (waiting to be scrolled into view),
+  // and the promo currently showing the highlight ring.
+  const [focusId, setFocusId] = React.useState<string | null>(null);
+  const [highlightId, setHighlightId] = React.useState<string | null>(null);
+
   const scrollerRef = React.useRef<HTMLDivElement>(null);
 
-  // The promo popup fires this event when "Shop the promos" is clicked, so
-  // the strip is on the "Limited time" tab when the page scrolls to it.
+  // The promo popup fires this event when a promo (or "Shop the promos") is
+  // clicked, so the strip is on the "Limited time" tab when the page scrolls
+  // to it. If the event carries a productId, we also focus that card.
   React.useEffect(() => {
-    const showPromos = () => setTab("promos");
+    const showPromos = (e: Event) => {
+      setTab("promos");
+      const id = (e as CustomEvent<{ productId?: string }>).detail?.productId;
+      setFocusId(id ?? null);
+    };
     window.addEventListener("show-promos-tab", showPromos);
     return () => window.removeEventListener("show-promos-tab", showPromos);
   }, []);
@@ -425,17 +446,22 @@ export function FeaturedProducts() {
     };
   }, []);
 
-  // Live promos first, then upcoming ones.
+  // Live promos first, then upcoming ones. The promo the popup pointed at is
+  // always included, even if it falls outside the first MAX_HIGHLIGHTS.
   const highlights = React.useMemo(() => {
-    return [...promos]
-      .sort((a, b) => {
-        const aUpcoming = isUpcoming(a);
-        const bUpcoming = isUpcoming(b);
-        if (aUpcoming !== bUpcoming) return aUpcoming ? 1 : -1;
-        return 0;
-      })
-      .slice(0, MAX_HIGHLIGHTS);
-  }, [promos]);
+    const sorted = [...promos].sort((a, b) => {
+      const aUpcoming = isUpcoming(a);
+      const bUpcoming = isUpcoming(b);
+      if (aUpcoming !== bUpcoming) return aUpcoming ? 1 : -1;
+      return 0;
+    });
+    const top = sorted.slice(0, MAX_HIGHLIGHTS);
+    if (focusId && !top.some((p) => p.id === focusId)) {
+      const target = sorted.find((p) => p.id === focusId);
+      if (target) top.push(target);
+    }
+    return top;
+  }, [promos, focusId]);
 
   const promosEmpty =
     promosStatus === "error" ||
@@ -457,6 +483,34 @@ export function FeaturedProducts() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bothSettled, promosEmpty, bestSellersEmpty]);
 
+  // When the popup asks for a specific promo: center its card in the strip
+  // and give it a highlight ring.
+  React.useEffect(() => {
+    if (!focusId || tab !== "promos" || promosStatus !== "ready") return;
+
+    const t = setTimeout(() => {
+      const el = document.getElementById(`promo-${focusId}`);
+      // inline:"center" moves the horizontal scroller; block:"nearest" avoids
+      // fighting the page's vertical scroll to the section.
+      el?.scrollIntoView({
+        behavior: "smooth",
+        inline: "center",
+        block: "nearest",
+      });
+      setHighlightId(focusId);
+      setFocusId(null);
+    }, 450); // let the popup close + page scroll start first
+
+    return () => clearTimeout(t);
+  }, [focusId, tab, promosStatus, highlights]);
+
+  // Clear the highlight ring after a moment.
+  React.useEffect(() => {
+    if (!highlightId) return;
+    const t = setTimeout(() => setHighlightId(null), 2500);
+    return () => clearTimeout(t);
+  }, [highlightId]);
+
   const scrollByAmount = (dir: 1 | -1) => {
     scrollerRef.current?.scrollBy({ left: dir * 300, behavior: "smooth" });
   };
@@ -472,8 +526,7 @@ export function FeaturedProducts() {
   return (
     // Plain Quanta Green (#00A552) from the brand palette — no image,
     // no decorative elements. The id is the scroll target for the promo
-    // popup's "Shop the promos" button; scroll-mt-20 leaves room for the
-    // sticky navbar.
+    // popup's buttons; scroll-mt-20 leaves room for the sticky navbar.
     <section
       id="special-promos"
       className="relative w-full scroll-mt-20 overflow-hidden bg-[#00A552]"
@@ -551,8 +604,15 @@ export function FeaturedProducts() {
           >
             {isPromos
               ? highlights.map((product) => (
-                  <div key={product.id} className="snap-start">
-                    <PromoCard product={product} />
+                  <div
+                    key={product.id}
+                    id={`promo-${product.id}`}
+                    className="snap-start"
+                  >
+                    <PromoCard
+                      product={product}
+                      highlighted={highlightId === product.id}
+                    />
                   </div>
                 ))
               : bestSellers.map((product) => (
