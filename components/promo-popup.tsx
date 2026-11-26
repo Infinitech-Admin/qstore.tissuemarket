@@ -206,14 +206,14 @@ export function PromoPopup() {
       */}
       <DialogContent
         className={cn(
-          "w-[calc(100%-2rem)] max-w-[960px] gap-0 overflow-hidden rounded-3xl border-0 p-0",
+          "w-[calc(100%-2rem)] max-w-[1040px] gap-0 overflow-hidden rounded-3xl border-0 p-0",
           "max-h-[92vh] md:max-h-none",
           "[&>button]:right-4 [&>button]:top-4 [&>button]:z-30 [&>button]:rounded-full",
           "[&>button]:bg-black/20 [&>button]:p-1.5 [&>button]:text-white",
           "[&>button]:opacity-100 [&>button:hover]:bg-black/35",
         )}
       >
-        <div className="relative grid max-h-[92vh] overflow-y-auto bg-gradient-to-br from-[#e3f6cf] via-[#cdeeb0] to-[#b2e28f] md:aspect-[945/386] md:max-h-none md:grid-cols-[36%_64%] md:overflow-hidden">
+        <div className="relative grid max-h-[92vh] overflow-y-auto bg-gradient-to-br from-[#e3f6cf] via-[#cdeeb0] to-[#b2e28f] md:aspect-[945/386] md:max-h-none md:grid-cols-[34%_66%] md:overflow-hidden">
           {/* Soft curved wave behind the text, bottom-left */}
           <div
             aria-hidden
@@ -295,20 +295,20 @@ export function PromoPopup() {
           {/* Right: big rounded green panel with the product */}
           <div className="relative z-10 p-3 md:p-3.5 md:pl-0">
             <div
-              className="flex h-full flex-col items-center gap-5 overflow-hidden rounded-2xl bg-gradient-to-br from-[#7fcf55] via-[#33b35a] to-[#00A552] p-5 shadow-lg md:flex-row md:gap-8 md:px-9 md:py-5"
+              className="flex h-full flex-col items-center gap-5 overflow-hidden rounded-2xl bg-gradient-to-br from-[#7fcf55] via-[#33b35a] to-[#00A552] p-5 shadow-lg md:flex-row md:gap-7 md:px-5 md:py-4"
               aria-live="polite"
             >
-              <div className="relative aspect-square w-full max-w-[220px] shrink-0 overflow-hidden rounded-3xl bg-white shadow-xl md:h-full md:max-h-[300px] md:w-auto">
+              <div className="relative aspect-square w-full max-w-[300px] shrink-0 overflow-hidden rounded-3xl bg-white shadow-xl md:h-full md:max-w-none md:w-auto">
                 <Image
                   key={product.id}
                   src={resolveImageUrl(product.image)}
                   alt={product.name}
                   fill
                   className={cn(
-                    "object-cover",
+                    "object-contain",
                     soldOut && "opacity-40 grayscale",
                   )}
-                  sizes="300px"
+                  sizes="(min-width: 768px) 360px, 300px"
                   priority
                 />
                 {off !== null && !soldOut && (
