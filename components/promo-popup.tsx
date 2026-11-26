@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import {
   CalendarClock,
   ChevronLeft,
@@ -19,6 +20,7 @@ import {
   DialogOverlay,
 } from "@/components/ui/dialog";
 import { cn, formatPHP } from "@/lib/utils";
+import { buildPromoHref } from "@/lib/slug";
 
 const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_IMAGE_URL ?? "";
 
@@ -93,6 +95,7 @@ function sortLatest(a: PromoProduct, b: PromoProduct): number {
 }
 
 export function PromoPopup() {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [promos, setPromos] = useState<PromoProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -179,14 +182,17 @@ export function PromoPopup() {
     }
   }
 
-  // Close the popup, switch the strip to its "Limited time" tab, and scroll
-  // to it. When a productId is given, the strip also centers and highlights
-  // that product's card.
-  function goToPromos(productId?: string) {
+  // Clicking a promo goes straight to that promo's own page (/promos/id-slug).
+  function openPromo(promo: PromoProduct) {
     handleOpenChange(false);
-    window.dispatchEvent(
-      new CustomEvent("show-promos-tab", { detail: { productId } }),
-    );
+    router.push(buildPromoHref(promo as Parameters<typeof buildPromoHref>[0]));
+  }
+
+  // "Shop the promos": close the popup, switch the strip to its "Limited
+  // time" tab, and scroll to it.
+  function goToPromos() {
+    handleOpenChange(false);
+    window.dispatchEvent(new Event("show-promos-tab"));
     // Wait for the dialog to finish closing so the page can scroll again.
     setTimeout(() => {
       document
@@ -303,19 +309,19 @@ export function PromoPopup() {
           </div>
 
           {/* Right: big rounded green panel with the product.
-              Clicking it jumps to that product's card in the promo strip. */}
+              Clicking it opens that promo's page. */}
           <div className="relative z-10 p-3 md:p-3.5 md:pl-0">
             <div
               role="button"
               tabIndex={0}
-              onClick={() => goToPromos(product.id)}
+              onClick={() => openPromo(product)}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault();
-                  goToPromos(product.id);
+                  openPromo(product);
                 }
               }}
-              aria-label={`View ${product.name} in the promos`}
+              aria-label={`View ${product.name} promo`}
               className="flex h-full cursor-pointer flex-col items-center gap-5 overflow-hidden rounded-2xl bg-gradient-to-br from-[#7fcf55] via-[#33b35a] to-[#00A552] p-5 shadow-lg transition-[filter] hover:brightness-105 md:flex-row md:gap-7 md:px-5 md:py-4"
               aria-live="polite"
             >
