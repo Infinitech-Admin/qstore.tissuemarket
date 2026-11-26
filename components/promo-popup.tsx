@@ -29,8 +29,6 @@ const MAX_PROMOS = 20;
 // Delay before the popup appears after page load.
 const OPEN_DELAY_MS = 800;
 // Shown once per browser session so it doesn't nag on every navigation.
-// Must match the id on the FeaturedProducts <section>.
-const PROMOS_SECTION_ID = "special-promos";
 const SESSION_KEY = "quanta-promo-popup-seen";
 
 type PromoProduct = {
@@ -182,26 +180,11 @@ export function PromoPopup() {
     }
   }
 
-  // Clicking a promo goes straight to that promo's own page (/promos/id-slug).
+  // Clicking a promo (or "Shop the promos") goes straight to that promo's own page (/promos/id-slug).
   function openPromo(promo: PromoProduct) {
     handleOpenChange(false);
     router.push(buildPromoHref(promo as Parameters<typeof buildPromoHref>[0]));
   }
-
-  // "Shop the promos": close the popup, switch the strip to its "Limited
-  // time" tab, and scroll to it.
-  function goToPromos() {
-    handleOpenChange(false);
-    window.dispatchEvent(new Event("show-promos-tab"));
-    // Wait for the dialog to finish closing so the page can scroll again.
-    setTimeout(() => {
-      document
-        .getElementById(PROMOS_SECTION_ID)
-        ?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 250);
-  }
-
-  const handleShopNow = () => goToPromos();
 
   if (isLoading || promos.length === 0) return null;
 
@@ -253,7 +236,7 @@ export function PromoPopup() {
 
             <div className="flex flex-wrap items-center gap-2">
               <Button
-                onClick={handleShopNow}
+                onClick={() => openPromo(product)}
                 className="h-11 rounded-xl bg-[#0a4a2a] px-6 font-semibold text-white shadow-md hover:bg-[#08381f]"
               >
                 Shop the promos
