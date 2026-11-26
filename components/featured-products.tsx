@@ -371,6 +371,14 @@ export function FeaturedProducts() {
 
   const scrollerRef = React.useRef<HTMLDivElement>(null);
 
+  // The promo popup fires this event when "Shop the promos" is clicked, so
+  // the strip is on the "Limited time" tab when the page scrolls to it.
+  React.useEffect(() => {
+    const showPromos = () => setTab("promos");
+    window.addEventListener("show-promos-tab", showPromos);
+    return () => window.removeEventListener("show-promos-tab", showPromos);
+  }, []);
+
   // Fetch both lists once on mount (not just the active tab) so switching
   // tabs is instant with no re-fetch/loading flash.
   React.useEffect(() => {
@@ -463,8 +471,13 @@ export function FeaturedProducts() {
 
   return (
     // Plain Quanta Green (#00A552) from the brand palette — no image,
-    // no decorative elements.
-    <section className="relative w-full overflow-hidden bg-[#00A552]">
+    // no decorative elements. The id is the scroll target for the promo
+    // popup's "Shop the promos" button; scroll-mt-20 leaves room for the
+    // sticky navbar.
+    <section
+      id="special-promos"
+      className="relative w-full scroll-mt-20 overflow-hidden bg-[#00A552]"
+    >
       <div className="container py-6 sm:py-8">
         <div className="mb-3 flex flex-wrap items-end justify-between gap-3 sm:mb-4">
           <div>
