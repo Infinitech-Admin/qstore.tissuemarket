@@ -7,6 +7,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { NotificationPromptBanner } from "@/components/notification-prompt-banner";
 import { CursorTissueTrail } from "@/components/cursor-tissue-trail";
 import { PwaUpdateNotifier } from "@/components/pwa-update-notifier";
+
 import { getCurrentUserId } from "@/lib/get-current-user";
 import "./globals.css";
 import { cn } from "@/lib/utils";

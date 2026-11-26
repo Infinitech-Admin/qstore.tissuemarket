@@ -7,8 +7,9 @@ import { CategoryStrip } from "@/components/category-strip";
 import { ShopSection } from "@/components/shop-section";
 import { BrandStrip } from "@/components/brand-strip";
 import { Footer } from "@/components/footer";
-
+import { PromoPopup } from "@/components/promo-popup";
 export default function HomePage() {
+  
   return (
     <>
       <Navbar />
@@ -30,6 +31,7 @@ export default function HomePage() {
         <BrandStrip />
       </main>
       <Footer />
+      <PromoPopup />
     </>
   );
 }
