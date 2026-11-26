@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { Sparkles, Loader2 } from "lucide-react";
+import { Sparkles, ChevronLeft, ChevronRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { formatPHP } from "@/lib/utils";
+import { cn, formatPHP } from "@/lib/utils";
 
 const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_IMAGE_URL ?? "";
 
@@ -90,6 +90,24 @@ export function PromoPopup() {
   const [open, setOpen] = useState(false);
   const [promos, setPromos] = useState<PromoProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [index, setIndex] = useState(0);
+
+  const total = promos.length;
+  const goNext = () => setIndex((i) => (i + 1) % Math.max(total, 1));
+  const goPrev = () =>
+    setIndex((i) => (i - 1 + Math.max(total, 1)) % Math.max(total, 1));
+
+  // Left/right arrow keys while the popup is open.
+  useEffect(() => {
+    if (!open) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "ArrowRight") goNext();
+      if (e.key === "ArrowLeft") goPrev();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, total]);
 
   useEffect(() => {
     // Skip if already seen this session.
@@ -162,78 +180,119 @@ export function PromoPopup() {
 
   if (isLoading || promos.length === 0) return null;
 
+  const product = promos[index];
+  const off = percentOff(product);
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="flex max-h-[88vh] max-w-lg flex-col gap-0 overflow-hidden p-0">
-        <DialogHeader className="border-b border-moss-100 bg-moss-50 px-6 py-5 text-left">
-          <div className="mb-1 flex items-center gap-1.5 text-moss-900">
+      <DialogContent className="flex max-h-[92vh] max-w-md flex-col gap-0 overflow-hidden p-0">
+        <DialogHeader className="border-b border-moss-100 bg-moss-50 px-6 py-4 text-left">
+          <div className="mb-0.5 flex items-center gap-1.5 text-moss-900">
             <Sparkles className="h-4 w-4 text-yellow-500" />
             <span className="text-xs font-medium">Special promos</span>
           </div>
-          <DialogTitle className="font-display text-2xl font-semibold text-moss-900">
+          <DialogTitle className="font-display text-xl font-semibold text-moss-900">
             Deals you can grab right now
           </DialogTitle>
-          <DialogDescription>
-            The latest {promos.length} promos from our catalog. Prices are valid
-            while the promo runs.
+          <DialogDescription className="sr-only">
+            Browse the latest promos using the arrows.
           </DialogDescription>
         </DialogHeader>
 
-        <ul className="divide-y divide-moss-100 overflow-y-auto">
-          {promos.map((product) => {
-            const off = percentOff(product);
-            return (
-              <li key={product.id} className="flex gap-3 px-6 py-3.5">
-                <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-moss-100">
-                  <Image
-                    src={resolveImageUrl(product.image)}
-                    alt={product.name}
-                    fill
-                    className="object-cover"
-                    sizes="64px"
-                  />
-                </div>
+        {/* Slide */}
+        <div className="overflow-y-auto">
+          <div className="relative aspect-[4/3] w-full bg-white">
+            <Image
+              key={product.id}
+              src={resolveImageUrl(product.image)}
+              alt={product.name}
+              fill
+              className="object-contain p-4"
+              sizes="448px"
+              priority
+            />
 
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-moss-900">
-                        {product.name}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {product.brand}
-                      </p>
-                    </div>
-                    {off !== null && (
-                      <Badge className="shrink-0 border-transparent bg-yellow-300 text-moss-950">
-                        {off}% off
-                      </Badge>
-                    )}
-                  </div>
+            {off !== null && (
+              <Badge className="absolute left-3 top-3 border-transparent bg-yellow-300 text-moss-950">
+                {off}% off
+              </Badge>
+            )}
 
-                  <div className="mt-1.5 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-                    <span className="text-sm font-semibold text-moss-900">
-                      {product.price != null ? formatPHP(product.price) : "—"}
-                    </span>
-                    {product.originalPrice ? (
-                      <span className="text-xs text-muted-foreground line-through">
-                        {formatPHP(product.originalPrice)}
-                      </span>
-                    ) : null}
-                    <span className="text-[11px] text-muted-foreground">
-                      {formatEnds(product)}
-                    </span>
-                    {!product.inStock && (
-                      <span className="text-[11px] font-medium text-red-600">
-                        Out of stock
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
+            {total > 1 && (
+              <>
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="outline"
+                  onClick={goPrev}
+                  aria-label="Previous promo"
+                  className="absolute left-3 top-1/2 h-9 w-9 -translate-y-1/2 rounded-full bg-white/90 shadow-sm"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </Button>
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="outline"
+                  onClick={goNext}
+                  aria-label="Next promo"
+                  className="absolute right-3 top-1/2 h-9 w-9 -translate-y-1/2 rounded-full bg-white/90 shadow-sm"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </Button>
+              </>
+            )}
+          </div>
+
+          <div className="px-6 pb-2 pt-4" aria-live="polite">
+            <p className="text-xs text-muted-foreground">{product.brand}</p>
+            <h3 className="mt-0.5 text-base font-medium leading-snug text-moss-900">
+              {product.name}
+            </h3>
+            <div className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+              <span className="text-xl font-semibold text-moss-900">
+                {product.price != null ? formatPHP(product.price) : "—"}
+              </span>
+              {product.originalPrice ? (
+                <span className="text-sm text-muted-foreground line-through">
+                  {formatPHP(product.originalPrice)}
+                </span>
+              ) : null}
+              <span className="text-xs text-muted-foreground">
+                {formatEnds(product)}
+              </span>
+              {!product.inStock && (
+                <span className="text-xs font-medium text-red-600">
+                  Out of stock
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Dots + counter */}
+          {total > 1 && (
+            <div className="flex items-center justify-center gap-2 px-6 pb-3 pt-2">
+              {promos.map((p, i) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => setIndex(i)}
+                  aria-label={`Go to promo ${i + 1}`}
+                  aria-current={i === index}
+                  className={cn(
+                    "h-2 rounded-full transition-all",
+                    i === index
+                      ? "w-5 bg-moss-700"
+                      : "w-2 bg-moss-200 hover:bg-moss-300",
+                  )}
+                />
+              ))}
+              <span className="ml-2 text-[11px] text-muted-foreground">
+                {index + 1} / {total}
+              </span>
+            </div>
+          )}
+        </div>
 
         <DialogFooter className="border-t border-moss-100 px-6 py-4">
           <Button variant="outline" onClick={() => handleOpenChange(false)}>
